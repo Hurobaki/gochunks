@@ -33,6 +33,12 @@ You can add `-zip` flag to get **.zip** output.
 gochunks -zip <directory>
 ```
 
-#Authors
+And change the default chunk size
+
+```shell script
+gochunks -zip -size=10 <directory>
+```
+
+# Authors
 
 *   **Théo Herveux** [MyGit](https://github.com/Hurobaki)
