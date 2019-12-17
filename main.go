@@ -3,6 +3,9 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/Hurobaki/gochunks/directories"
+	"github.com/Hurobaki/gochunks/zip"
+	"io/ioutil"
 	"log"
 	"os"
 )
@@ -13,54 +16,6 @@ const DirectoryResultName = "prismic_output"
 const SubDirectoryName = "chunk"
 const ChunkSize = 200
 
-func createDirectory(dirName string) error {
-
-	fmt.Println(dirName)
-
-	err := os.Mkdir(dirName, os.ModePerm)
-
-	if err != nil {
-		log.Fatal("Au secours !", err)
-	}
-
-	return nil
-}
-
-func getDirectoryFiles(dirName string) ([]string, error) {
-	var files []string
-	f, err := os.Open(dirName)
-
-	if err != nil {
-		return files, err
-	}
-
-	fileInfo, err := f.Readdir(-1)
-	f.Close()
-
-	if err != nil {
-		return files, err
-	}
-
-	for _, file := range fileInfo {
-		files = append(files, file.Name())
-	}
-
-	return files, nil
-}
-
-func directoryExistsOrCreate(dirName string) error {
-	dir, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	fmt.Println(dir)
-	if _, err := os.Stat(dir + "/" + dirName); os.IsNotExist(err) {
-		fmt.Println("Création du dossier 'prismic_output'")
-		os.Mkdir(DirectoryResultName, os.ModePerm)
-	}
-	return nil
-}
-
 func createChunks(directoryName string, files []string) error {
 	var chunkNumber = 0
 	var newChunk string
@@ -68,7 +23,7 @@ func createChunks(directoryName string, files []string) error {
 	for index, file := range files {
 		if index % ChunkSize == 0 {
 			newChunk = fmt.Sprintf("%s%d", SubDirectoryName,chunkNumber)
-			err := createDirectory(fmt.Sprintf("%s/%s", DirectoryResultName, newChunk))
+			err := directories.CreateDirectory(fmt.Sprintf("%s/%s", DirectoryResultName, newChunk))
 
 			if err != nil {
 				fmt.Println("Error lors de la création des sous dossiers", err)
@@ -86,13 +41,30 @@ func createChunks(directoryName string, files []string) error {
 	return nil
 }
 
+func createZip() {
+	files, _ := ioutil.ReadDir(DirectoryResultName)
+
+	for _, file := range files {
+		if file.IsDir() {
+			fmt.Println("c'est un dossier !!!")
+			files, err := directories.GetDirectoryFiles(fmt.Sprintf("%s/%s", DirectoryResultName, file.Name()))
+
+			if err != nil {
+				log.Fatal("pwet", err)
+			}
+
+			zip.ZipFiles(fmt.Sprintf("%s/%s.zip", DirectoryResultName, file.Name()), files, fmt.Sprintf("%s/%s/", DirectoryResultName, file.Name()))
+		}
+	}
+}
+
 
 func main() {
 	directoryName := os.Args[1]
 
 	fmt.Println(directoryName)
 
-	files, err := getDirectoryFiles(directoryName)
+	files, err := directories.GetDirectoryFiles(directoryName)
 
 	if err != nil {
 		log.Fatal("Error getting files", err)
@@ -100,14 +72,30 @@ func main() {
 
 	fmt.Println(len(files))
 
-	err = directoryExistsOrCreate(DirectoryResultName)
+	dirExists, err := directories.Exists(DirectoryResultName)
 
 	if err != nil {
-		log.Fatal("Directory exists or create", err)
+		log.Fatal("problème vérification existence dossier", err)
+	}
+
+	if !dirExists {
+		err := directories.Create(DirectoryResultName)
+
+		if err != nil {
+			log.Fatal("problème création dossier", err)
+		}
+	} else {
+		err := directories.RemoveContents(DirectoryResultName)
+
+		if err != nil {
+			log.Fatal("pwet", err)
+		}
 	}
 
 	err = createChunks(directoryName, files)
-	
+
+	createZip()
+
 	if err != nil {
 		log.Fatal("", err)
 	}
