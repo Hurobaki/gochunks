@@ -67,3 +67,7 @@ func Exists(dirName string) (bool, error) {
 
 	return true, err
 }
+
+func IsDirectory(dirName string) (bool, error) {
+	return true, nil
+}
