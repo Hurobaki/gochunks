@@ -6,6 +6,6 @@ const SubDirectory = "chunk"
 const Zip = false
 const ChunkSize = 200
 const Keep = false
-const Output = "prismic_output"
+const Output = "gochunks_output"
 
 
