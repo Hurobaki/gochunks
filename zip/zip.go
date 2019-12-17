@@ -2,9 +2,9 @@ package zip
 
 import (
 	"archive/zip"
+	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 )
 
@@ -22,7 +22,7 @@ func ZipFiles(zipName string, files []string, path string) error {
 
 	for _, file := range files {
 		if err := AddFileToZip(zipWriter, fmt.Sprintf("%s%s", path, file), file); err != nil {
-			log.Fatalf("Failed to add file %s to zip: %s", file, err)
+			return errors.New(fmt.Sprintf("Failed to add file %s to zip: %s", file, err))
 		}
 	}
 

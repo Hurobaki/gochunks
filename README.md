@@ -1,5 +1,8 @@
 # Gochunks
 
+This application allows you to create chunks from a list of files. You specify chunks size and it will creates folders with as many files as the size specified.
+
+
 ## Install
 
 ### Clone and install
@@ -20,7 +23,15 @@ go install -mod=vendor
 
 ## How to use
 
+```shell script
+gochunks <directory>
+```
 
+You can add `-zip` flag to get **.zip** output.
+
+```shell script
+gochunks -zip <directory>
+```
 
 #Authors
 

@@ -2,15 +2,15 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"github.com/Hurobaki/gochunks/directories"
+	"github.com/Hurobaki/gochunks/flags"
 	"github.com/Hurobaki/gochunks/zip"
 	"io/ioutil"
 	"log"
 	"os"
 )
-
-// Delete everything inside prismic_output directory
 
 const DirectoryResultName = "prismic_output"
 const SubDirectoryName = "chunk"
@@ -23,7 +23,7 @@ func createChunks(directoryName string, files []string) error {
 	for index, file := range files {
 		if index % ChunkSize == 0 {
 			newChunk = fmt.Sprintf("%s%d", SubDirectoryName,chunkNumber)
-			err := directories.CreateDirectory(fmt.Sprintf("%s/%s", DirectoryResultName, newChunk))
+			err := directories.Create(fmt.Sprintf("%s/%s", DirectoryResultName, newChunk))
 
 			if err != nil {
 				fmt.Println("Error lors de la création des sous dossiers", err)
@@ -50,19 +50,28 @@ func createZip() {
 			files, err := directories.GetDirectoryFiles(fmt.Sprintf("%s/%s", DirectoryResultName, file.Name()))
 
 			if err != nil {
-				log.Fatal("pwet", err)
+				log.Fatal(err)
 			}
 
-			zip.ZipFiles(fmt.Sprintf("%s/%s.zip", DirectoryResultName, file.Name()), files, fmt.Sprintf("%s/%s/", DirectoryResultName, file.Name()))
+			err = zip.ZipFiles(fmt.Sprintf("%s/%s.zip", DirectoryResultName, file.Name()), files, fmt.Sprintf("%s/%s/", DirectoryResultName, file.Name()))
+
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 }
 
 
 func main() {
-	directoryName := os.Args[1]
+	flags.Zip = flag.Bool("zip", false, "create zip files")
+	flag.Parse()
 
-	fmt.Println(directoryName)
+	var directoryName string
+
+	if len(flag.Args()) > 0 {
+		directoryName = flag.Args()[0]
+	}
 
 	files, err := directories.GetDirectoryFiles(directoryName)
 
@@ -94,11 +103,14 @@ func main() {
 
 	err = createChunks(directoryName, files)
 
-	createZip()
+	if *flags.Zip {
+		createZip()
+	}
+
 
 	if err != nil {
 		log.Fatal("", err)
 	}
-	
+
 }
 

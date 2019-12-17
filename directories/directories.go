@@ -1,31 +1,18 @@
 package directories
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 )
-
-func CreateDirectory(dirName string) error {
-
-	fmt.Println(dirName)
-
-	err := os.Mkdir(dirName, os.ModePerm)
-
-	if err != nil {
-		log.Fatal("Au secours !", err)
-	}
-
-	return nil
-}
 
 func RemoveContents(dirName string) error {
 	directory, err := ioutil.ReadDir(dirName)
 
 	if err != nil {
-		return err
+		return errors.New(fmt.Sprintf("Something went wrong with directory RemoveContents() method : %s", err.Error()))
 	}
 
 	for _, d := range directory {
@@ -35,8 +22,8 @@ func RemoveContents(dirName string) error {
 	return nil
 }
 
+// refacto GetDirectoryFiles => GetFiles
 func GetDirectoryFiles(dirName string) ([]string, error) {
-	fmt.Println(dirName)
 	var files []string
 	f, err := os.Open(dirName)
 
@@ -58,24 +45,11 @@ func GetDirectoryFiles(dirName string) ([]string, error) {
 	return files, nil
 }
 
-func ExistsOrCreate(dirName string) error {
-	dir, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	fmt.Println(dir)
-	if _, err := os.Stat(dir + "/" + dirName); os.IsNotExist(err) {
-		fmt.Println("Création du dossier 'prismic_output'")
-		os.Mkdir(dirName, os.ModePerm)
-	}
-	return nil
-}
-
 func Create(dirName string) error {
 	err := os.Mkdir(dirName, os.ModePerm)
 
 	if err != nil {
-		return err
+		return errors.New(fmt.Sprintf("Something went wrong with directory Create() method : %s", err.Error()))
 	}
 
 	return nil
