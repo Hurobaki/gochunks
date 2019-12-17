@@ -39,10 +39,12 @@ And change the default chunk size
 gochunks -zip -size=10 <directory>
 ```
 
-| Flag | Type | Description |
-| ---- | ---- | ----------- |
-| -zip | bool | Either generate zip files or not |
-| -size | int | Number of files contained in chunks |
+| Flag  | Type   | Description |
+| ----  | ------ | ----------- |
+| -zip  | bool   | Either generate zip files or not     |
+| -size | int    | Number of files contained in chunks  |
+| -keep | bool   | Keep output directories              |
+| -o    | string | Output directory name                |
 
 # Authors
 

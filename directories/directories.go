@@ -1,9 +1,10 @@
 package directories
 
 import (
-	"errors"
 	"fmt"
+	"github.com/Hurobaki/gochunks/errors"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 )
@@ -12,7 +13,7 @@ func RemoveContents(dirName string) error {
 	directory, err := ioutil.ReadDir(dirName)
 
 	if err != nil {
-		return errors.New(fmt.Sprintf("Something went wrong with directory RemoveContents() method : %s", err.Error()))
+		return errors.CreateError("Something went wrong with directory RemoveContents() method", err)
 	}
 
 	for _, d := range directory {
@@ -49,7 +50,7 @@ func Create(dirName string) error {
 	err := os.Mkdir(dirName, os.ModePerm)
 
 	if err != nil {
-		return errors.New(fmt.Sprintf("Something went wrong with directory Create() method : %s", err.Error()))
+		return errors.CreateError("Something went wrong with directory Create() method ", err)
 	}
 
 	return nil
@@ -69,5 +70,67 @@ func Exists(dirName string) (bool, error) {
 }
 
 func IsDirectory(dirName string) (bool, error) {
+	file, err := os.Stat(dirName)
+
+	if err != nil {
+		return false, err
+	}
+
+	isDir := file.IsDir()
+
+	if !isDir {
+		return false, nil
+	}
+
 	return true, nil
+}
+
+func RemoveDirectory(dirName string, removeAll bool) error {
+	var err error = nil
+
+	if removeAll {
+		err = os.RemoveAll(dirName)
+	} else {
+		err = os.Remove(dirName)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func CleanDirectory(dirName string, predicate interface{}) {
+	files, err := GetDirectoryFiles(dirName)
+
+	if err != nil {
+		log.Fatal(errors.CreateError("Pwet", nil))
+	}
+
+	for _, file := range files {
+		filePath := fmt.Sprintf("%s/%s", dirName, file)
+		var isDirectory = false
+
+		switch v := predicate.(type) {
+		case bool:
+			isDirectory = predicate.(bool)
+		case func(string) (bool, error):
+			isDir, err := v(filePath)
+
+			if err != nil {
+				log.Fatal("pwet")
+			}
+
+			isDirectory = isDir
+		}
+
+		if isDirectory {
+			err := RemoveDirectory(filePath, true)
+
+			if err != nil {
+				fmt.Println(errors.CreateError("Something went wrong with RemoveDirectory() method ", err))
+			}
+		}
+	}
 }

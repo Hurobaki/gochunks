@@ -6,5 +6,13 @@ import (
 )
 
 func CreateError(message string, err error) error {
-	return errors.New(fmt.Sprintf("%s %s", message, err.Error()))
+	var errorMessage string
+
+	if err == nil {
+		errorMessage = ""
+	} else {
+		errorMessage = err.Error()
+	}
+
+	return errors.New(fmt.Sprintf("%s %s", message, errorMessage))
 }
