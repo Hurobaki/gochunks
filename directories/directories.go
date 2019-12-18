@@ -3,9 +3,9 @@ package directories
 import (
 	"fmt"
 	"github.com/Hurobaki/gochunks/errors"
+	"github.com/Hurobaki/gochunks/utils"
 	"io/ioutil"
 	"os"
-	"path"
 )
 
 func RemoveContents(dirName string) error {
@@ -16,13 +16,12 @@ func RemoveContents(dirName string) error {
 	}
 
 	for _, d := range directory {
-		os.RemoveAll(path.Join([]string{dirName, d.Name()}...))
+		os.RemoveAll(utils.FullPath([]string{dirName, d.Name()}...))
 	}
 
 	return nil
 }
 
-// refacto GetDirectoryFiles => GetFiles
 func GetFiles(dirName string) ([]string, error) {
 	var files []string
 	f, err := os.Open(dirName)

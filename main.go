@@ -2,15 +2,17 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/Hurobaki/gochunks/config"
 	"github.com/Hurobaki/gochunks/directories"
 	"github.com/Hurobaki/gochunks/errors"
 	"github.com/Hurobaki/gochunks/flags"
+	"github.com/Hurobaki/gochunks/format"
+	"github.com/Hurobaki/gochunks/utils"
 	"github.com/Hurobaki/gochunks/zip"
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 )
 
 func createChunks(directoryName string, files []string) error {
@@ -19,18 +21,16 @@ func createChunks(directoryName string, files []string) error {
 
 	for index, file := range files {
 		if index % *flags.ChunkSize == 0 {
-			newChunk = fmt.Sprintf("%s%d", config.SubDirectory,chunkNumber)
-			err := directories.Create(fmt.Sprintf("%s/%s", *flags.Output, newChunk))
+			newChunk = format.Concatenate("", config.SubDirectory, strconv.Itoa(chunkNumber))
 
-			if err != nil {
-				fmt.Println("Error lors de la création des sous dossiers", err)
+			if err := directories.Create(utils.FullPath([]string{*flags.Output, newChunk}...)); err != nil {
+				return errors.CreateError("Something went wrong while creating sub directories", err)
 			}
+
 			chunkNumber++
 		}
 
-		err := os.Rename(fmt.Sprintf("%s/%s", directoryName, file), fmt.Sprintf("./%s/%s/%s", *flags.Output, newChunk, file))
-
-		if err != nil {
+		if err := os.Rename(utils.FullPath([]string{directoryName, file}...), utils.FullPath([]string{*flags.Output, newChunk, file}...)); err != nil {
 			return errors.CreateError("Something went wrong with Rename() method", err)
 		}
 	}
@@ -38,24 +38,26 @@ func createChunks(directoryName string, files []string) error {
 	return nil
 }
 
-func createZip() {
+func createZip() error {
 	files, _ := ioutil.ReadDir(*flags.Output)
 
 	for _, file := range files {
 		if file.IsDir() {
-			files, err := directories.GetFiles(fmt.Sprintf("%s/%s", *flags.Output, file.Name()))
+			files, err := directories.GetFiles(utils.FullPath(*flags.Output, file.Name()))
 
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			err = zip.ZipFiles(fmt.Sprintf("%s/%s.zip", *flags.Output, file.Name()), files, fmt.Sprintf("%s/%s/", *flags.Output, file.Name()))
+			err = zip.ZipFiles(utils.FullPath(*flags.Output, format.Concatenate("", file.Name(), ".zip")), files, utils.FullPath(*flags.Output, file.Name()))
 
 			if err != nil {
 				log.Fatal(err)
 			}
 		}
 	}
+
+	return nil
 }
 
 func createDirectoryOutput() error {
@@ -81,7 +83,6 @@ func createDirectoryOutput() error {
 
 	return nil
 }
-
 
 func main() {
 	flags.Zip = flag.Bool("zip", config.Zip, "create zip files")
@@ -124,7 +125,10 @@ func main() {
 	}
 
 	if *flags.Zip {
-		createZip()
+		err := createZip()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	if !*flags.Keep {

@@ -16,8 +16,15 @@ You must add `$HOME/go/bin/` directory to your $PATH in order to be able to call
 
 ### Build it
 
+#### MacOs / Linux
 ```shell script
 cd $HOME/go/src/github.com/Hurobaki/gochunks
+go install -mod=vendor
+```
+
+#### Windows
+```shell script
+cd %UserProfile%\go\src\github.com\Hurobaki\gochunks
 go install -mod=vendor
 ```
 

@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"errors"
 	"fmt"
+	"github.com/Hurobaki/gochunks/utils"
 	"io"
 	"os"
 )
@@ -21,7 +22,7 @@ func ZipFiles(zipName string, files []string, path string) error {
 	defer zipWriter.Close()
 
 	for _, file := range files {
-		if err := AddFileToZip(zipWriter, fmt.Sprintf("%s%s", path, file), file); err != nil {
+		if err := AddFileToZip(zipWriter, utils.FullPath(path, file), file); err != nil {
 			return errors.New(fmt.Sprintf("Failed to add file %s to zip: %s", file, err))
 		}
 	}
