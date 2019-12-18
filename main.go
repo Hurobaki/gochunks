@@ -43,7 +43,7 @@ func createZip() {
 
 	for _, file := range files {
 		if file.IsDir() {
-			files, err := directories.GetDirectoryFiles(fmt.Sprintf("%s/%s", *flags.Output, file.Name()))
+			files, err := directories.GetFiles(fmt.Sprintf("%s/%s", *flags.Output, file.Name()))
 
 			if err != nil {
 				log.Fatal(err)
@@ -105,7 +105,7 @@ func main() {
 		}
 	}
 
-	files, err := directories.GetDirectoryFiles(flags.DirectoryParameterName)
+	files, err := directories.GetFiles(flags.DirectoryParameterName)
 
 	if err != nil {
 		log.Fatal(err)
@@ -128,7 +128,11 @@ func main() {
 	}
 
 	if !*flags.Keep {
-		directories.CleanDirectory(*flags.Output, directories.IsDirectory)
+		err = directories.CleanDirectory(*flags.Output, directories.IsDirectory)
+
+		if err != nil {
+			log.Fatal(errors.CreateError("Something went wrong with CleanDirectory() method", err))
+		}
 	}
 }
 

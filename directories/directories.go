@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/Hurobaki/gochunks/errors"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 )
@@ -24,7 +23,7 @@ func RemoveContents(dirName string) error {
 }
 
 // refacto GetDirectoryFiles => GetFiles
-func GetDirectoryFiles(dirName string) ([]string, error) {
+func GetFiles(dirName string) ([]string, error) {
 	var files []string
 	f, err := os.Open(dirName)
 
@@ -101,11 +100,11 @@ func RemoveDirectory(dirName string, removeAll bool) error {
 	return nil
 }
 
-func CleanDirectory(dirName string, predicate interface{}) {
-	files, err := GetDirectoryFiles(dirName)
+func CleanDirectory(dirName string, predicate interface{}) error {
+	files, err := GetFiles(dirName)
 
 	if err != nil {
-		log.Fatal(errors.CreateError("Pwet", nil))
+		return err
 	}
 
 	for _, file := range files {
@@ -119,7 +118,7 @@ func CleanDirectory(dirName string, predicate interface{}) {
 			isDir, err := v(filePath)
 
 			if err != nil {
-				log.Fatal("pwet")
+				return err
 			}
 
 			isDirectory = isDir
@@ -129,8 +128,10 @@ func CleanDirectory(dirName string, predicate interface{}) {
 			err := RemoveDirectory(filePath, true)
 
 			if err != nil {
-				fmt.Println(errors.CreateError("Something went wrong with RemoveDirectory() method ", err))
+				return err
 			}
 		}
 	}
+
+	return nil
 }
